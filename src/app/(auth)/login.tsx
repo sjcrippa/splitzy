@@ -8,6 +8,8 @@ import { supabase } from "@/lib/supabase";
 WebBrowser.maybeCompleteAuthSession();
 const redirectTo = makeRedirectUri();
 
+console.log("🔗 Redirect URI:", redirectTo);
+
 export default function LoginScreen() {
   const handleGoogleLogin = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
