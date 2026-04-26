@@ -25,7 +25,7 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
   setFilter: (filter) => set({ filter }),
 
   fetchCategories: async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("categories")
       .select("*")
       .order("name");
