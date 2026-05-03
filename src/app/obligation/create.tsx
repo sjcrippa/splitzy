@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, Stack } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useObligationStore } from "@/lib/store/obligation-store";
@@ -70,6 +70,12 @@ export default function CreateObligationScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-background"
     >
+      <Stack.Screen
+        options={{
+          title: "Nueva obligación",
+        }}
+      />
+
       <ScrollView className="flex-1 px-6 pt-4" keyboardShouldPersistTaps="handled">
         {/* Name */}
         <Text className="text-gray-400 text-sm mb-2">Nombre</Text>

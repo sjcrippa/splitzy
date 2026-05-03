@@ -56,8 +56,6 @@ export default function AddPaymentScreen() {
       <Stack.Screen
         options={{
           title: "Agregar pago",
-          headerStyle: { backgroundColor: "#121220" },
-          headerTintColor: "#fff",
         }}
       />
 

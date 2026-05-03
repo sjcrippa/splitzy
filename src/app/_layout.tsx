@@ -1,6 +1,6 @@
 import "@/global.css";
 import { useEffect } from "react";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { View, ActivityIndicator } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/lib/store/auth-store";
@@ -15,6 +15,8 @@ export default function RootLayout() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+    }).catch(() => {
+      // Network may not be ready during JS reload — session will recover via onAuthStateChange
     });
 
     const {
@@ -99,5 +101,5 @@ export default function RootLayout() {
     );
   }
 
-  return <Slot />;
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

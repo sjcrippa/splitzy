@@ -76,8 +76,6 @@ export default function ObligationDetailScreen() {
       <Stack.Screen
         options={{
           title: obligation.name,
-          headerStyle: { backgroundColor: "#121220" },
-          headerTintColor: "#fff",
           headerRight: () => (
             <TouchableOpacity onPress={handleArchive} className="mr-2">
               <MaterialIcons name="archive" size={24} color="#6b7280" />
