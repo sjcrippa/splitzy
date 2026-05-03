@@ -1,4 +1,5 @@
 import { Tabs } from "expo-router";
+import { View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
 export default function TabLayout() {
@@ -37,18 +38,42 @@ export default function TabLayout() {
         name="add"
         options={{
           title: "",
+          headerTitle: "Nuevo gasto",
           tabBarIcon: () => (
-            <MaterialIcons name="add-circle" size={40} color="#6366f1" />
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                backgroundColor: "#6366f1",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 24,
+                shadowColor: "#6366f1",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+            >
+              <MaterialIcons name="add" size={32} color="#fff" />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="obligations"
+        options={{
+          title: "Compartido",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="handshake" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="budgets"
         options={{
-          title: "Presupuestos",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="pie-chart" size={size} color={color} />
-          ),
+          href: null,
         }}
       />
       <Tabs.Screen

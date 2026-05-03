@@ -5,6 +5,7 @@ import { View, ActivityIndicator } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useExpenseStore } from "@/lib/store/expense-store";
+import { useObligationStore } from "@/lib/store/obligation-store";
 
 export default function RootLayout() {
   const { session, loading, setSession, fetchProfile } = useAuthStore();
@@ -42,6 +43,33 @@ export default function RootLayout() {
         { event: "*", schema: "public", table: "expenses" },
         () => {
           useExpenseStore.getState().fetchExpenses();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session]);
+
+  // Realtime subscriptions for obligations
+  useEffect(() => {
+    if (!session) return;
+
+    const channel = supabase
+      .channel("obligations-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "shared_obligations" },
+        () => {
+          useObligationStore.getState().fetchObligations();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "obligation_payments" },
+        () => {
+          useObligationStore.getState().fetchObligations();
         }
       )
       .subscribe();

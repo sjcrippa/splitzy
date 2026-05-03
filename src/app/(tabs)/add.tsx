@@ -17,14 +17,12 @@ import CategoryPicker from "@/components/CategoryPicker";
 
 export default function AddExpenseScreen() {
   const router = useRouter();
-  const { profile, partnerProfile } = useAuthStore();
+  const { profile } = useAuthStore();
   const { categories, fetchCategories, addExpense } = useExpenseStore();
 
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [type, setType] = useState<"personal" | "shared">("personal");
-  const [paidByMe, setPaidByMe] = useState(true);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -44,11 +42,11 @@ export default function AddExpenseScreen() {
     setSaving(true);
     await addExpense({
       user_id: profile.id,
-      paid_by: paidByMe ? profile.id : partnerProfile?.id ?? profile.id,
+      paid_by: profile.id,
       category_id: categoryId,
       amount: parseFloat(amount),
       description: description.trim(),
-      type,
+      type: "personal",
       split_mode: "50/50",
       split_pct: null,
       date: new Date().toISOString().split("T")[0],
@@ -58,8 +56,6 @@ export default function AddExpenseScreen() {
     setAmount("");
     setDescription("");
     setCategoryId(null);
-    setType("personal");
-    setPaidByMe(true);
 
     router.navigate("/(tabs)");
   };
@@ -86,7 +82,7 @@ export default function AddExpenseScreen() {
         <Text className="text-gray-400 text-sm mb-2">Descripción</Text>
         <TextInput
           className="bg-surface text-white text-base rounded-2xl px-4 py-4 mb-6"
-          placeholder="Ej: Super del lunes"
+          placeholder="Ej: Almuerzo"
           placeholderTextColor="#4b5563"
           value={description}
           onChangeText={setDescription}
@@ -112,74 +108,6 @@ export default function AddExpenseScreen() {
             <Text className="text-gray-500 text-base">Elegir categoría</Text>
           )}
         </TouchableOpacity>
-
-        <Text className="text-gray-400 text-sm mb-2">Tipo</Text>
-        <View className="flex-row mb-6 gap-3">
-          <TouchableOpacity
-            onPress={() => setType("personal")}
-            className={`flex-1 py-3 rounded-2xl items-center ${
-              type === "personal" ? "bg-primary" : "bg-surface"
-            }`}
-          >
-            <Text
-              className={`font-semibold ${
-                type === "personal" ? "text-white" : "text-gray-400"
-              }`}
-            >
-              Personal
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setType("shared")}
-            className={`flex-1 py-3 rounded-2xl items-center ${
-              type === "shared" ? "bg-primary" : "bg-surface"
-            }`}
-          >
-            <Text
-              className={`font-semibold ${
-                type === "shared" ? "text-white" : "text-gray-400"
-              }`}
-            >
-              Compartido
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {type === "shared" && partnerProfile && (
-          <>
-            <Text className="text-gray-400 text-sm mb-2">Pagó</Text>
-            <View className="flex-row mb-6 gap-3">
-              <TouchableOpacity
-                onPress={() => setPaidByMe(true)}
-                className={`flex-1 py-3 rounded-2xl items-center ${
-                  paidByMe ? "bg-secondary" : "bg-surface"
-                }`}
-              >
-                <Text
-                  className={`font-semibold ${
-                    paidByMe ? "text-white" : "text-gray-400"
-                  }`}
-                >
-                  Yo
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setPaidByMe(false)}
-                className={`flex-1 py-3 rounded-2xl items-center ${
-                  !paidByMe ? "bg-secondary" : "bg-surface"
-                }`}
-              >
-                <Text
-                  className={`font-semibold ${
-                    !paidByMe ? "text-white" : "text-gray-400"
-                  }`}
-                >
-                  {partnerProfile.name || "Pareja"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
 
         <TouchableOpacity
           onPress={handleSave}

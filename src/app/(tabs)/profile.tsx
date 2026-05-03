@@ -5,16 +5,19 @@ import {
   TouchableOpacity,
   Image,
   Alert,
-  Share,
   ActivityIndicator,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { MaterialIcons } from "@expo/vector-icons";
+import * as Linking from "expo-linking";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { supabase } from "@/lib/supabase";
 
 export default function ProfileScreen() {
   const { profile, partnerProfile, signOut, fetchProfile } = useAuthStore();
   const [inviting, setInviting] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleInvitePartner = async () => {
     if (!profile) return;
@@ -33,11 +36,15 @@ export default function ProfileScreen() {
       return;
     }
 
-    const link = `splitzy://invite/${data.token}`;
+    setInviteLink(Linking.createURL(`invite/${data.token}`));
+    setCopied(false);
+  };
 
-    await Share.share({
-      message: `Unite a Splitzy para llevar nuestras cuentas juntos! ${link}`,
-    });
+  const handleCopyLink = async () => {
+    if (!inviteLink) return;
+    await Clipboard.setStringAsync(inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleUnlinkPartner = () => {
@@ -96,6 +103,34 @@ export default function ProfileScreen() {
             <TouchableOpacity onPress={handleUnlinkPartner}>
               <MaterialIcons name="link-off" size={24} color="#ef4444" />
             </TouchableOpacity>
+          </View>
+        ) : inviteLink ? (
+          <View>
+            <Text className="text-gray-400 text-xs mb-2">
+              Compartí este link con tu pareja:
+            </Text>
+            <View className="flex-row items-center bg-background rounded-xl px-3 py-3">
+              <Text
+                className="flex-1 text-white text-xs mr-2"
+                numberOfLines={1}
+                ellipsizeMode="middle"
+              >
+                {inviteLink}
+              </Text>
+              <TouchableOpacity
+                onPress={handleCopyLink}
+                className="bg-primary px-3 py-2 rounded-lg flex-row items-center"
+              >
+                <MaterialIcons
+                  name={copied ? "check" : "content-copy"}
+                  size={16}
+                  color="#fff"
+                />
+                <Text className="text-white text-xs font-semibold ml-1">
+                  {copied ? "Copiado" : "Copiar"}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <TouchableOpacity

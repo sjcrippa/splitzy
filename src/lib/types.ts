@@ -49,3 +49,45 @@ export interface Budget {
 }
 
 export type ExpenseFilter = "all" | "personal" | "shared";
+
+// --- Obligaciones compartidas ---
+
+export type ObligationType = "fixed" | "variable";
+export type Recurrence = "monthly" | "weekly" | "one_time" | "none";
+export type SplitMode = "50/50" | "custom";
+
+export interface SharedObligation {
+  id: string;
+  created_by: string;
+  name: string;
+  icon: string;
+  obligation_type: ObligationType;
+  fixed_amount: number | null;
+  recurrence: Recurrence;
+  split_mode: SplitMode;
+  split_pct: number | null;
+  is_active: boolean;
+  created_at: string;
+  payments?: ObligationPayment[];
+}
+
+export interface ObligationPayment {
+  id: string;
+  obligation_id: string;
+  paid_by: string;
+  amount: number;
+  description: string | null;
+  date: string;
+  created_at: string;
+}
+
+export interface ObligationSummary {
+  obligation: SharedObligation;
+  totalPaid: number;
+  myPaid: number;
+  partnerPaid: number;
+  myShare: number;
+  partnerShare: number;
+  balance: number; // positive = partner owes me
+  progress: number; // 0-1, only meaningful for fixed
+}
