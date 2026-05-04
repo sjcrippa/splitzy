@@ -57,6 +57,7 @@ export default function ObligationDetailScreen() {
   );
 
   const isFixed = obligation.obligation_type === "fixed";
+  const isPersonal = obligation.scope === "personal";
 
   const handleArchive = () => {
     Alert.alert("Archivar", `Archivar "${obligation.name}"?`, [
@@ -115,9 +116,11 @@ export default function ObligationDetailScreen() {
                     {obligation.name}
                   </Text>
                   <Text className="text-gray-500 text-sm">
-                    {obligation.split_mode === "50/50"
-                      ? "50/50"
-                      : `${obligation.split_pct}/${100 - (obligation.split_pct ?? 50)}`}
+                    {isPersonal
+                      ? "Personal"
+                      : obligation.split_mode === "50/50"
+                        ? "50/50"
+                        : `${obligation.split_pct}/${100 - (obligation.split_pct ?? 50)}`}
                     {" \u00B7 "}
                     {isFixed
                       ? formatCurrency(obligation.fixed_amount ?? 0)
@@ -150,47 +153,58 @@ export default function ObligationDetailScreen() {
               )}
 
               {/* Balance */}
-              <View className="flex-row gap-3">
-                <View className="flex-1 bg-surface-light rounded-xl p-3">
-                  <Text className="text-gray-500 text-xs">Vos pagaste</Text>
+              {isPersonal ? (
+                <View className="bg-surface-light rounded-xl p-3">
+                  <Text className="text-gray-500 text-xs">Total pagado</Text>
                   <Text className="text-white font-bold text-base">
-                    {formatCurrency(summary.myPaid)}
+                    {formatCurrency(summary.totalPaid)}
                   </Text>
                 </View>
-                <View className="flex-1 bg-surface-light rounded-xl p-3">
-                  <Text className="text-gray-500 text-xs">
-                    {partnerProfile?.name ?? "Pareja"} pagó
-                  </Text>
-                  <Text className="text-white font-bold text-base">
-                    {formatCurrency(summary.partnerPaid)}
-                  </Text>
-                </View>
-              </View>
+              ) : (
+                <>
+                  <View className="flex-row gap-3">
+                    <View className="flex-1 bg-surface-light rounded-xl p-3">
+                      <Text className="text-gray-500 text-xs">Vos pagaste</Text>
+                      <Text className="text-white font-bold text-base">
+                        {formatCurrency(summary.myPaid)}
+                      </Text>
+                    </View>
+                    <View className="flex-1 bg-surface-light rounded-xl p-3">
+                      <Text className="text-gray-500 text-xs">
+                        {partnerProfile?.name ?? "Pareja"} pagó
+                      </Text>
+                      <Text className="text-white font-bold text-base">
+                        {formatCurrency(summary.partnerPaid)}
+                      </Text>
+                    </View>
+                  </View>
 
-              {summary.balance !== 0 && (
-                <View
-                  className={`mt-3 rounded-xl p-3 ${
-                    summary.balance > 0 ? "bg-success/10" : "bg-secondary/10"
-                  }`}
-                >
-                  <Text
-                    className={`text-center font-semibold ${
-                      summary.balance > 0 ? "text-success" : "text-secondary"
-                    }`}
-                  >
-                    {summary.balance > 0
-                      ? `${partnerProfile?.name ?? "Pareja"} te debe ${formatCurrency(summary.balance)}`
-                      : `Le debés ${formatCurrency(Math.abs(summary.balance))} a ${partnerProfile?.name ?? "Pareja"}`}
-                  </Text>
-                </View>
-              )}
+                  {summary.balance !== 0 && (
+                    <View
+                      className={`mt-3 rounded-xl p-3 ${
+                        summary.balance > 0 ? "bg-success/10" : "bg-secondary/10"
+                      }`}
+                    >
+                      <Text
+                        className={`text-center font-semibold ${
+                          summary.balance > 0 ? "text-success" : "text-secondary"
+                        }`}
+                      >
+                        {summary.balance > 0
+                          ? `${partnerProfile?.name ?? "Pareja"} te debe ${formatCurrency(summary.balance)}`
+                          : `Le debés ${formatCurrency(Math.abs(summary.balance))} a ${partnerProfile?.name ?? "Pareja"}`}
+                      </Text>
+                    </View>
+                  )}
 
-              {summary.balance === 0 && summary.totalPaid > 0 && (
-                <View className="mt-3 rounded-xl p-3 bg-surface-light">
-                  <Text className="text-center font-semibold text-white">
-                    Están a mano
-                  </Text>
-                </View>
+                  {summary.balance === 0 && summary.totalPaid > 0 && (
+                    <View className="mt-3 rounded-xl p-3 bg-surface-light">
+                      <Text className="text-center font-semibold text-white">
+                        Están a mano
+                      </Text>
+                    </View>
+                  )}
+                </>
               )}
             </View>
 
@@ -214,7 +228,7 @@ export default function ObligationDetailScreen() {
         onPress={() =>
           router.push({
             pathname: "/obligation/add-payment",
-            params: { obligationId: obligation.id },
+            params: { obligationId: obligation.id, scope: obligation.scope },
           })
         }
         style={{

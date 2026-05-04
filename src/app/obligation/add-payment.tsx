@@ -14,7 +14,8 @@ import { useAuthStore } from "@/lib/store/auth-store";
 import { useObligationStore } from "@/lib/store/obligation-store";
 
 export default function AddPaymentScreen() {
-  const { obligationId } = useLocalSearchParams<{ obligationId: string }>();
+  const { obligationId, scope } = useLocalSearchParams<{ obligationId: string; scope?: string }>();
+  const isPersonal = scope === "personal";
   const router = useRouter();
   const { profile, partnerProfile } = useAuthStore();
   const { addPayment } = useObligationStore();
@@ -32,9 +33,11 @@ export default function AddPaymentScreen() {
     }
     if (!profile || !obligationId) return;
 
-    const paidBy = paidByMe
+    const paidBy = isPersonal
       ? profile.id
-      : partnerProfile?.id ?? profile.id;
+      : paidByMe
+        ? profile.id
+        : partnerProfile?.id ?? profile.id;
 
     setSaving(true);
     await addPayment({
@@ -84,8 +87,8 @@ export default function AddPaymentScreen() {
           onChangeText={setDescription}
         />
 
-        {/* Paid by */}
-        {partnerProfile && (
+        {/* Paid by (only for shared) */}
+        {!isPersonal && partnerProfile && (
           <>
             <Text className="text-gray-400 text-sm mb-2">Pagó</Text>
             <View className="flex-row mb-6 gap-3">

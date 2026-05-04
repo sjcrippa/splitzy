@@ -12,6 +12,7 @@ export default function ObligationCard({ summary }: ObligationCardProps) {
   const router = useRouter();
   const { obligation, totalPaid, progress, balance } = summary;
   const isFixed = obligation.obligation_type === "fixed";
+  const isPersonal = obligation.scope === "personal";
 
   return (
     <TouchableOpacity
@@ -31,9 +32,11 @@ export default function ObligationCard({ summary }: ObligationCardProps) {
             {obligation.name}
           </Text>
           <Text className="text-gray-500 text-xs mt-0.5">
-            {obligation.split_mode === "50/50"
-              ? "50/50"
-              : `${obligation.split_pct}/${100 - (obligation.split_pct ?? 50)}`}
+            {isPersonal
+              ? "Personal"
+              : obligation.split_mode === "50/50"
+                ? "50/50"
+                : `${obligation.split_pct}/${100 - (obligation.split_pct ?? 50)}`}
             {" \u00B7 "}
             {obligation.recurrence === "monthly"
               ? "Mensual"
@@ -74,7 +77,7 @@ export default function ObligationCard({ summary }: ObligationCardProps) {
         </View>
       )}
 
-      {balance !== 0 && (
+      {!isPersonal && balance !== 0 && (
         <Text
           className={`text-xs mt-2 ${balance > 0 ? "text-success" : "text-secondary"}`}
         >

@@ -4,11 +4,15 @@ import {
   SharedObligation,
   ObligationPayment,
   ObligationSummary,
+  ObligationFilter,
 } from "../types";
 
 interface ObligationState {
   obligations: SharedObligation[];
   loading: boolean;
+  filter: ObligationFilter;
+  setFilter: (filter: ObligationFilter) => void;
+  getFilteredObligations: () => SharedObligation[];
   fetchObligations: () => Promise<void>;
   addObligation: (
     obligation: Omit<SharedObligation, "id" | "created_at" | "payments" | "is_active">
@@ -63,6 +67,15 @@ function getCurrentPeriodPayments(
 export const useObligationStore = create<ObligationState>((set, get) => ({
   obligations: [],
   loading: false,
+  filter: "all",
+
+  setFilter: (filter) => set({ filter }),
+
+  getFilteredObligations: () => {
+    const { obligations, filter } = get();
+    if (filter === "all") return obligations;
+    return obligations.filter((o) => o.scope === filter);
+  },
 
   fetchObligations: async () => {
     set({ loading: true });
@@ -125,6 +138,27 @@ export const useObligationStore = create<ObligationState>((set, get) => ({
     );
 
     const totalPaid = periodPayments.reduce((s, p) => s + p.amount, 0);
+
+    const isPersonal = obligation.scope === "personal";
+
+    if (isPersonal) {
+      const progress =
+        obligation.obligation_type === "fixed" && obligation.fixed_amount
+          ? Math.min(totalPaid / obligation.fixed_amount, 1)
+          : 0;
+
+      return {
+        obligation,
+        totalPaid,
+        myPaid: totalPaid,
+        partnerPaid: 0,
+        myShare: totalPaid,
+        partnerShare: 0,
+        balance: 0,
+        progress,
+      };
+    }
+
     const myPaid = periodPayments
       .filter((p) => p.paid_by === myId)
       .reduce((s, p) => s + p.amount, 0);

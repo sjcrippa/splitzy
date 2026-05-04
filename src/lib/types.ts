@@ -55,6 +55,8 @@ export type ExpenseFilter = "all" | "personal" | "shared";
 export type ObligationType = "fixed" | "variable";
 export type Recurrence = "monthly" | "weekly" | "one_time" | "none";
 export type SplitMode = "50/50" | "custom";
+export type ObligationScope = "shared" | "personal";
+export type ObligationFilter = "all" | "personal" | "shared";
 
 export interface SharedObligation {
   id: string;
@@ -64,8 +66,9 @@ export interface SharedObligation {
   obligation_type: ObligationType;
   fixed_amount: number | null;
   recurrence: Recurrence;
-  split_mode: SplitMode;
+  split_mode: SplitMode | null;
   split_pct: number | null;
+  scope: ObligationScope;
   is_active: boolean;
   created_at: string;
   payments?: ObligationPayment[];

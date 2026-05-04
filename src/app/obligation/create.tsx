@@ -14,13 +14,14 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useObligationStore } from "@/lib/store/obligation-store";
 import IconPicker from "@/components/IconPicker";
-import type { ObligationType, Recurrence, SplitMode } from "@/lib/types";
+import type { ObligationType, Recurrence, SplitMode, ObligationScope } from "@/lib/types";
 
 export default function CreateObligationScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
   const { addObligation } = useObligationStore();
 
+  const [scope, setScope] = useState<ObligationScope>("shared");
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("receipt");
   const [obligationType, setObligationType] = useState<ObligationType>("fixed");
@@ -42,6 +43,8 @@ export default function CreateObligationScreen() {
     }
     if (!profile) return;
 
+    const isPersonal = scope === "personal";
+
     setSaving(true);
     await addObligation({
       created_by: profile.id,
@@ -51,8 +54,9 @@ export default function CreateObligationScreen() {
       fixed_amount:
         obligationType === "fixed" ? parseFloat(fixedAmount) : null,
       recurrence,
-      split_mode: splitMode,
-      split_pct: splitMode === "custom" ? parseFloat(splitPct) : null,
+      scope,
+      split_mode: isPersonal ? null : splitMode,
+      split_pct: isPersonal ? null : splitMode === "custom" ? parseFloat(splitPct) : null,
     });
     setSaving(false);
     router.back();
@@ -77,6 +81,39 @@ export default function CreateObligationScreen() {
       />
 
       <ScrollView className="flex-1 px-6 pt-4" keyboardShouldPersistTaps="handled">
+        {/* Scope */}
+        <Text className="text-gray-400 text-sm mb-2">Tipo de obligación</Text>
+        <View className="flex-row mb-6 gap-3">
+          <TouchableOpacity
+            onPress={() => setScope("shared")}
+            className={`flex-1 py-3 rounded-2xl items-center ${
+              scope === "shared" ? "bg-primary" : "bg-surface"
+            }`}
+          >
+            <Text
+              className={`font-semibold ${
+                scope === "shared" ? "text-white" : "text-gray-400"
+              }`}
+            >
+              Compartida
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setScope("personal")}
+            className={`flex-1 py-3 rounded-2xl items-center ${
+              scope === "personal" ? "bg-primary" : "bg-surface"
+            }`}
+          >
+            <Text
+              className={`font-semibold ${
+                scope === "personal" ? "text-white" : "text-gray-400"
+              }`}
+            >
+              Personal
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Name */}
         <Text className="text-gray-400 text-sm mb-2">Nombre</Text>
         <TextInput
@@ -170,57 +207,61 @@ export default function CreateObligationScreen() {
           ))}
         </View>
 
-        {/* Split */}
-        <Text className="text-gray-400 text-sm mb-2">División</Text>
-        <View className="flex-row mb-4 gap-3">
-          <TouchableOpacity
-            onPress={() => setSplitMode("50/50")}
-            className={`flex-1 py-3 rounded-2xl items-center ${
-              splitMode === "50/50" ? "bg-primary" : "bg-surface"
-            }`}
-          >
-            <Text
-              className={`font-semibold ${
-                splitMode === "50/50" ? "text-white" : "text-gray-400"
-              }`}
-            >
-              50/50
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setSplitMode("custom")}
-            className={`flex-1 py-3 rounded-2xl items-center ${
-              splitMode === "custom" ? "bg-primary" : "bg-surface"
-            }`}
-          >
-            <Text
-              className={`font-semibold ${
-                splitMode === "custom" ? "text-white" : "text-gray-400"
-              }`}
-            >
-              Personalizado
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {/* Split (only for shared) */}
+        {scope === "shared" && (
+          <>
+            <Text className="text-gray-400 text-sm mb-2">División</Text>
+            <View className="flex-row mb-4 gap-3">
+              <TouchableOpacity
+                onPress={() => setSplitMode("50/50")}
+                className={`flex-1 py-3 rounded-2xl items-center ${
+                  splitMode === "50/50" ? "bg-primary" : "bg-surface"
+                }`}
+              >
+                <Text
+                  className={`font-semibold ${
+                    splitMode === "50/50" ? "text-white" : "text-gray-400"
+                  }`}
+                >
+                  50/50
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setSplitMode("custom")}
+                className={`flex-1 py-3 rounded-2xl items-center ${
+                  splitMode === "custom" ? "bg-primary" : "bg-surface"
+                }`}
+              >
+                <Text
+                  className={`font-semibold ${
+                    splitMode === "custom" ? "text-white" : "text-gray-400"
+                  }`}
+                >
+                  Personalizado
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-        {splitMode === "custom" && (
-          <View className="bg-surface rounded-2xl px-4 py-4 mb-6">
-            <Text className="text-gray-400 text-sm mb-2">
-              Tu porcentaje: {splitPct}%
-            </Text>
-            <TextInput
-              className="bg-surface-light text-white text-lg rounded-xl px-4 py-3"
-              keyboardType="numeric"
-              value={splitPct}
-              onChangeText={(v) => {
-                const n = parseInt(v) || 0;
-                setSplitPct(String(Math.min(100, Math.max(0, n))));
-              }}
-            />
-            <Text className="text-gray-500 text-xs mt-2">
-              Tu pareja: {100 - (parseInt(splitPct) || 0)}%
-            </Text>
-          </View>
+            {splitMode === "custom" && (
+              <View className="bg-surface rounded-2xl px-4 py-4 mb-6">
+                <Text className="text-gray-400 text-sm mb-2">
+                  Tu porcentaje: {splitPct}%
+                </Text>
+                <TextInput
+                  className="bg-surface-light text-white text-lg rounded-xl px-4 py-3"
+                  keyboardType="numeric"
+                  value={splitPct}
+                  onChangeText={(v) => {
+                    const n = parseInt(v) || 0;
+                    setSplitPct(String(Math.min(100, Math.max(0, n))));
+                  }}
+                />
+                <Text className="text-gray-500 text-xs mt-2">
+                  Tu pareja: {100 - (parseInt(splitPct) || 0)}%
+                </Text>
+              </View>
+            )}
+          </>
         )}
 
         {/* Save */}

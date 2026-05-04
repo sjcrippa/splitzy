@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from "react-native";
+import type { ObligationFilter } from "@/lib/types";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useObligationStore } from "@/lib/store/obligation-store";
@@ -15,7 +16,7 @@ import EmptyState from "@/components/EmptyState";
 export default function ObligationsScreen() {
   const router = useRouter();
   const { profile, partnerProfile } = useAuthStore();
-  const { obligations, loading, fetchObligations, getSummary } =
+  const { loading, fetchObligations, getSummary, filter, setFilter, getFilteredObligations } =
     useObligationStore();
 
   useEffect(() => {
@@ -26,9 +27,23 @@ export default function ObligationsScreen() {
     fetchObligations();
   }, []);
 
-  const summaries = obligations.map((o) =>
+  const filtered = getFilteredObligations();
+  const summaries = filtered.map((o) =>
     getSummary(o, profile?.id ?? "", partnerProfile?.id ?? "")
   );
+
+  const FILTERS: { key: ObligationFilter; label: string }[] = [
+    { key: "all", label: "Todas" },
+    { key: "shared", label: "Compartidas" },
+    { key: "personal", label: "Personales" },
+  ];
+
+  const emptySubtitle =
+    filter === "personal"
+      ? "No tenés obligaciones personales"
+      : filter === "shared"
+        ? "No tenés obligaciones compartidas"
+        : "Creá una obligación compartida o personal";
 
   return (
     <View className="flex-1 bg-background">
@@ -44,11 +59,32 @@ export default function ObligationsScreen() {
             tintColor="#6366f1"
           />
         }
+        ListHeaderComponent={
+          <View className="flex-row gap-2 mb-4">
+            {FILTERS.map((f) => (
+              <TouchableOpacity
+                key={f.key}
+                onPress={() => setFilter(f.key)}
+                className={`px-4 py-2 rounded-full ${
+                  filter === f.key ? "bg-primary" : "bg-surface"
+                }`}
+              >
+                <Text
+                  className={`text-sm font-semibold ${
+                    filter === f.key ? "text-white" : "text-gray-400"
+                  }`}
+                >
+                  {f.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        }
         ListEmptyComponent={
           <EmptyState
             icon="handshake"
             title="Sin obligaciones"
-            subtitle="Creá una obligación compartida con tu pareja"
+            subtitle={emptySubtitle}
           />
         }
         ListFooterComponent={
