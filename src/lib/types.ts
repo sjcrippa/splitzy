@@ -91,3 +91,32 @@ export interface ObligationSummary {
   balance: number; // positive = partner owes me
   progress: number; // 0-1, only meaningful for fixed
 }
+
+// --- Plan de gasto semanal ---
+
+export interface SpendingPlan {
+  id: string;
+  user_id: string;
+  month: string;
+  monthly_amount: number;
+  created_at: string;
+}
+
+export interface WeekAllocation {
+  weekNumber: number;
+  startDay: number;
+  endDay: number;
+  days: number;
+  allocated: number;
+  spent: number;
+  saved: number;
+  status: "completed" | "current" | "upcoming";
+}
+
+export interface SpendingPlanSummary {
+  plan: SpendingPlan;
+  weeks: WeekAllocation[];
+  totalSpent: number;
+  totalSaved: number;
+  currentWeek: WeekAllocation | null;
+}

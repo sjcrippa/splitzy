@@ -4,19 +4,23 @@ import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useExpenseStore } from "@/lib/store/expense-store";
 import { useObligationStore } from "@/lib/store/obligation-store";
+import { useSpendingPlanStore } from "@/lib/store/spending-plan-store";
 import BalanceSummary from "@/components/BalanceSummary";
 import ExpenseCard from "@/components/ExpenseCard";
 import ObligationCard from "@/components/ObligationCard";
+import WeeklyAllowanceCard from "@/components/WeeklyAllowanceCard";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { profile, partnerProfile } = useAuthStore();
   const { expenses, fetchExpenses, loading } = useExpenseStore();
   const { obligations, fetchObligations, getSummary } = useObligationStore();
+  const { fetchPlan, getSummary: getSpendingSummary } = useSpendingPlanStore();
 
   useEffect(() => {
     fetchExpenses();
     fetchObligations();
+    fetchPlan();
   }, []);
 
   const personalExpenses = expenses
@@ -27,9 +31,12 @@ export default function HomeScreen() {
     getSummary(o, profile?.id ?? "", partnerProfile?.id ?? "")
   );
 
+  const spendingSummary = getSpendingSummary(expenses);
+
   const onRefresh = useCallback(() => {
     fetchExpenses();
     fetchObligations();
+    fetchPlan();
   }, []);
 
   return (
@@ -48,6 +55,8 @@ export default function HomeScreen() {
             Hola, {profile?.name?.split(" ")[0] ?? ""}
           </Text>
           <BalanceSummary />
+
+          <WeeklyAllowanceCard summary={spendingSummary} />
 
           {/* Obligaciones activas */}
           {summaries.length > 0 && (
